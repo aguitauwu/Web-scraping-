@@ -1,15 +1,17 @@
-🌐✨ Hentaila Reverse API Documentation ✨🌐
+🧠✨ Hentaila Reverse API
 
-   
+> Documentación técnica no oficial — investigación de endpoints públicos, automatización y scraping educativo sobre hentaila.tv.
 
 
+
+<div align="center">  
+
+</div>
 ---
 
-¡Holi~! 🌸
+⚠️ Aviso Legal
 
-Esta es una documentación técnica, experimental y educativa sobre el proceso de reconocimiento, análisis y reverse‑engineering de Hentaila.tv 🕷️
-
-> ✨ Proyecto hecho en una tarde, desde un móvil, usando Termux y pura curiosidad.
+> Este proyecto es educativo y de investigación. No está afiliado ni respaldado por hentaila.tv. Usa esta información bajo tu propia responsabilidad y respeta las leyes locales y los Términos de Servicio de los sitios.
 
 
 
@@ -18,231 +20,263 @@ Esta es una documentación técnica, experimental y educativa sobre el proceso d
 
 📑 Tabla de Contenidos
 
-🌙 Introducción
+• Introducción
+• Arquitectura del sitio
+• Superficies de API descubiertas
+• Endpoints detallados
+• Sistema de tokens (nonces)
+• Pruebas manuales (curl)
+• Automatización
+• Ejemplos de respuestas
+• Headers recomendados
+• Herramientas
+• Seguridad y limitaciones
+• Ideas futuras
+• Créditos
 
-🎯 Objetivo del Proyecto
 
-🗺️ Arquitectura General del Sitio
+---
 
-🤖 Robots.txt & Sitemaps
+🌐 Introducción
 
-🌐 WordPress REST API (wp-json)
+Este repositorio documenta endpoints expuestos públicamente (WordPress REST, AJAX y plugins) identificados durante una sesión de investigación desde un dispositivo móvil, sin PC ni herramientas avanzadas.
 
-⚙️ admin-ajax.php
+Objetivos:
 
-🎮 Player Logic (player.php)
+Entender el flujo real de datos del reproductor
 
-🔐 Tokens & Parámetros
+Reproducir llamadas con herramientas estándar
 
-🕷️ Estrategia de Scraping
-
-🚨 Limitaciones y Riesgos
-
-🤖 Casos de Uso
-
-📓 Notas Importantes
+Diseñar automatización segura (rate‑limit friendly)
 
 
 
 ---
 
-🌙 Introducción
+🏗️ Arquitectura del Sitio
 
-Hentaila.tv es un sitio basado en WordPress con plugins personalizados para:
+graph LR
+A[Cliente] -->|GET| B[WordPress]
+B -->|JS| C[player-logic]
+C -->|nonce| D[admin-ajax.php]
+D -->|JSON| A
 
-Gestión de contenido (manga / episodios)
-
-Reproducción de video (HLS)
-
-Protección ligera mediante tokens
-
-
-No expone una API pública documentada, pero sí múltiples endpoints internos explotables de forma pasiva.
-
-
----
-
-🎯 Objetivo del Proyecto
-
-📌 Crear una API privada / personal
-
-📌 Experimentar con scraping real
-
-📌 Aprender cómo funcionan players protegidos
-
-📌 NO redistribuir contenido
-
-
-> ⚠️ Este proyecto NO es para uso comercial ni público.
-
-
+Frontend  → WordPress + JS
+Backend   → admin-ajax.php
+Player    → plugin player-logic
+Control   → Nonce dinámico por sesión
 
 
 ---
 
-🗺️ Arquitectura General
+🔎 Superficies de API Descubiertas
 
-Cliente
-  ↓
-WordPress
-  ├─ wp-json (REST)
-  ├─ admin-ajax.php
-  ├─ player-logic
-  │    └─ player.php?data=TOKEN
-  └─ HLS (.m3u8)
-
-
----
-
-🤖 Robots.txt & Sitemaps
-
-📍 robots.txt
-
-User-agent: *
-Allow: /
-
-Sitemap: https://hentaila.tv/sitemap_index.xml
-
-🗺️ Sitemap Index
-
-/page-sitemap.xml
-
-/wp-manga-sitemap.xml
-
-/wp-manga-genre-sitemap.xml
-
-/wp-manga-tag-sitemap.xml
-
-/wp-manga-release-sitemap.xml
-
-/wp-manga-author-sitemap.xml
-
-/wp-manga-chapters-sitemap*.xml
-
-
-💡 Los sitemaps son la fuente principal de scraping limpio.
-
-
----
-
-🌐 WordPress REST API
-
-Endpoint Base
+1️⃣ WordPress REST API (estándar)
 
 https://hentaila.tv/wp-json/
 
-Endpoints útiles
+Ejemplos:
 
-/wp-json/wp/v2/posts
+https://hentaila.tv/wp-json/wp/v2/posts
+https://hentaila.tv/wp-json/wp/v2/categories
+https://hentaila.tv/wp-json/wp/v2/tags
 
-/wp-json/wp/v2/wp-manga
-
-/wp-json/wp/v2/wp-manga-genre
-
-/wp-json/wp/v2/wp-manga-tag
-
-
-📌 Devuelven JSON estándar de WordPress
+Devuelve: JSON estándar (IDs, títulos, fechas, slugs, metadata)
 
 
 ---
 
-⚙️ admin-ajax.php
+2️⃣ Player Logic API (plugin)
 
-POST https://hentaila.tv/wp-admin/admin-ajax.php
+https://hentaila.tv/wp-json/player-logic/v1/
 
-Requiere action
-
-Sin sesión → devuelve 0
-
-Muchas acciones solo funcionan desde frontend
-
-
-📌 No es una API real, es un dispatcher interno.
-
-
----
-
-🎮 Player Logic
-
-Endpoint clave
-
-https://hentaila.tv/wp-content/plugins/player-logic/player.php?data=TOKEN
-
-Devuelve HTML + JS
-
-Usa HLS (.m3u8)
-
-El token contiene info cifrada (Base64)
-
-
-
----
-
-🔐 Tokens & Parámetros
-
-Codificados en Base64
-
-Contextuales (episodio + sesión)
-
-No reutilizables indefinidamente
-
-
-Ejemplo:
-
-echo TOKEN | base64 -d
-
-
----
-
-🕷️ Estrategia de Scraping
-
-✔ Usar sitemaps ✔ Extraer slugs ✔ Resolver player.php ✔ Interceptar .m3u8
-
-❌ NO brute-forcear tokens ❌ NO flood de peticiones
-
-
----
-
-🚨 Limitaciones
-
-Tokens expiran
-
-Cloudflare activo
-
-Cambios frecuentes en plugins
-
-
-
----
-
-🤖 Casos de Uso
-
-Bot privado de Discord
-
-Indexador local
-
-Dataset experimental
-
-Aprendizaje de RE web
-
-
-
----
-
-📓 Notas Importantes
-
-> 🌸 No existe una API pública oficial.
-
-🌸 Todo aquí documentado es resultado de observación pasiva.
-
-🌸 Respeta siempre los TOS del sitio.
+> ⚠️ Algunos endpoints requieren nonce válido generado por JS.
 
 
 
 
 ---
 
-✨ Proyecto educativo, técnico y experimental
+3️⃣ AJAX Backend (clave)
 
-Hecho con curiosidad, Termux y mucha paciencia 💫
+https://hentaila.tv/wp-admin/admin-ajax.php
+
+Acciones observadas:
+
+load_episode
+get_episode
+fetch_player
+get_video
+get_sources
+
+> Sin parámetros correctos → responde 0
+
+
+
+
+---
+
+🔐 Sistema de Tokens (Nonces)
+
+¿Qué es un nonce?
+
+• Token temporal
+• Generado por WordPress
+• Valida llamadas AJAX
+• Expira por sesión
+
+Se inyecta vía JS, normalmente en:
+
+/wp-content/plugins/player-logic/assets/js/player.js
+
+Ejemplo (simplificado):
+
+var playerLogic = { nonce: "abc123" }
+
+Flujo del nonce
+
+graph TD
+A[Visitar episodio] --> B[JS carga nonce]
+B --> C[POST admin-ajax]
+C --> D[JSON con sources]
+
+
+---
+
+🧪 Pruebas Manuales
+
+❌ Llamada sin nonce
+
+curl -X POST \
+  -d "action=get_sources" \
+  https://hentaila.tv/wp-admin/admin-ajax.php
+
+Respuesta:
+
+0
+
+
+---
+
+✅ Llamada con nonce
+
+curl -X POST \
+  -d "action=get_sources" \
+  -d "nonce=NONCE_AQUI" \
+  -d "episode_id=12345" \
+  https://hentaila.tv/wp-admin/admin-ajax.php
+
+Respuesta típica:
+
+{
+  "success": true,
+  "data": {
+    "sources": [
+      { "label": "720p", "file": "https://cdn.example/video.mp4" }
+    ]
+  }
+}
+
+
+---
+
+🤖 Automatización
+
+Bash (mínimo)
+
+#!/usr/bin/env bash
+URL="https://hentaila.tv/wp-admin/admin-ajax.php"
+NONCE="xxxx"
+EP="12345"
+
+curl -s -X POST \
+  -H "User-Agent: Mozilla/5.0" \
+  -H "Referer: https://hentaila.tv/" \
+  -d "action=get_sources" \
+  -d "nonce=$NONCE" \
+  -d "episode_id=$EP" \
+  "$URL" | jq
+
+Extracción automática del nonce (idea)
+
+nonce["']\s*:\s*["']([a-zA-Z0-9]+)["']
+
+
+---
+
+📦 Ejemplos de Respuestas
+
+Endpoint	Contenido
+
+/wp/v2/posts	IDs, títulos, fechas
+admin-ajax	URLs reales del video
+player-logic	Config del reproductor
+JS player	nonce + episode_id
+
+
+
+---
+
+🧾 Headers Recomendados
+
+-H "User-Agent: Mozilla/5.0"
+-H "Referer: https://hentaila.tv/"
+-H "Accept: application/json"
+
+
+---
+
+🛠️ Herramientas Útiles
+
+curl      → pruebas rápidas
+httpie   → POST legibles
+jq        → parseo JSON
+grep/sed → extracción tokens
+python   → automatización
+node     → bots / wrappers
+
+
+---
+
+🔒 Seguridad y Limitaciones
+
+• Nonces expiran
+• Rate‑limit posible
+• Cloudflare activo
+• Cambios frecuentes del plugin
+
+Buenas prácticas:
+
+Cachear nonces
+
+Reintentos con backoff
+
+No saturar endpoints
+
+
+
+---
+
+🚀 Ideas Futuras
+
+• Wrapper Node.js
+• Bot de Discord
+• CLI scraper
+• Docs Swagger (fake)
+• Comparativa con Rule34 API
+
+
+---
+
+🧾 Créditos
+
+Investigación realizada desde móvil, en una tarde, con curiosidad y paciencia.
+
+> "Reverse engineering también es aprender a leer el silencio de los endpoints."
+
+
+
+
+---
+
+⭐ Si este repo te sirvió, deja una estrella y compártelo con otros devs curiosos.
