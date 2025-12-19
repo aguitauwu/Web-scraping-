@@ -72,7 +72,7 @@ Ideal para aprendizaje de scraping, reverse engineering web y bots privados.
 
 ---
 
-1 Introducción y alcance
+1 **Introducción y alcance**
 
 Este documento describe cómo Hentaila expone datos sin una API pública, usando:
 
@@ -90,9 +90,9 @@ No se cubre automatización agresiva ni evasión de medidas anti-bot.
 
 ---
 
-2 Arquitectura general
+2 **Arquitectura general**
 
-Usuario/Bot
+```Usuario/Bot
    │
    ├── HTML (posts, capítulos)
    │
@@ -101,7 +101,8 @@ Usuario/Bot
    ├── XML (sitemaps)
    │
    └── Player Logic
-           └── HLS (.m3u8)
+           └── HLS (.m3u8)```
+
 
 Tecnologías detectadas:
 
