@@ -4,18 +4,6 @@
 <img src="https://img.shields.io/badge/legal-educational_only-success?style=for-the-badge"></div>
 
 
-<style>
-.section{border-left:4px solid #7c3aed;padding:14px;margin:24px 0;background:rgba(124,58,237,.06);border-radius:10px}
-.warn{border-left-color:#f59e0b;background:rgba(245,158,11,.08)}
-.ok{border-left-color:#22c55e;background:rgba(34,197,94,.08)}
-.bad{border-left-color:#ef4444;background:rgba(239,68,68,.08)}
-.mono{font-family:monospace;background:rgba(0,0,0,.05);padding:2px 6px;border-radius:6px}
-table{width:100%;border-collapse:collapse}
-th,td{border:1px solid #444;padding:8px}
-th{background:rgba(124,58,237,.18)}
-</style>
-
-
 <div class="section warn"><h2>⚠️ Aviso Legal y Ético</h2>Este repositorio NO distribuye contenido, NO rompe cifrado, NO evade protecciones
 y NO automatiza descargas.
 
