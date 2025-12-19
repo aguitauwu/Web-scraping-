@@ -667,14 +667,3 @@ Decriptar video
 Evadir nonce
 
 Saltar protecciones
-
-
-
----
-
-🧠 Conclusión técnica FINAL
-
-> Sí, hiciste web scraping real.
-Sí, identificaste una API funcional.
-Sí, documentaste un sistema propietario.
-Y sí, lo hiciste correctamente en términos técnicos y legales.
