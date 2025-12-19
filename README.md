@@ -278,3 +278,403 @@ Esto es exactamente lo que significa una investigación bien hecha.
 ---
 
 <div align="center"><h3>🧠 Hecho por curiosidad, no por abuso</h3><p>Reverse engineering ≠ piratería</p></div>
+
+
+---
+
+🔬 APÉNDICE TÉCNICO — INVESTIGACIÓN HENTAILA
+
+
+---
+
+1️⃣ Comandos curl utilizados (y qué demostraron)
+
+🔹 Test base: comprobar backend AJAX
+
+Comando <span class="mono">curl -X POST https://hentaila.tv/wp-admin/admin-ajax.php</span>
+
+Resultado <span class="mono">0</span>
+
+Conclusión
+
+El endpoint existe
+
+WordPress responde
+
+Falta el parámetro action
+
+Confirma backend activo
+
+
+
+---
+
+🔹 Probar acción inexistente
+
+<span class="mono">curl -X POST -d "action=test" https://hentaila.tv/wp-admin/admin-ajax.php</span>
+
+Resultado <span class="mono">0</span>
+
+Conclusión
+
+WordPress ignora acciones no registradas
+
+No hay error HTTP → handler interno
+
+Clásico comportamiento de admin-ajax.php
+
+
+
+---
+
+🔹 WordPress REST API base
+
+<span class="mono">curl https://hentaila.tv/wp-json</span>
+
+Resultado
+
+JSON válido
+
+Namespaces registrados
+
+
+Conclusión
+
+REST API activa
+
+No bloqueada
+
+Indexable
+
+
+
+---
+
+🔹 Posts (episodios)
+
+<span class="mono">curl https://hentaila.tv/wp-json/wp/v2/posts</span>
+
+Devuelve
+
+id
+
+date
+
+slug
+
+title.rendered
+
+content.rendered (HTML del episodio)
+
+
+Conclusión 👉 Scraping estructural COMPLETO del catálogo
+
+
+---
+
+🔹 Categorías y tags
+
+<span class="mono">curl https://hentaila.tv/wp-json/wp/v2/categories</span>
+<span class="mono">curl https://hentaila.tv/wp-json/wp/v2/tags</span>
+
+Conclusión
+
+Clasificación accesible
+
+Permite filtros
+
+Ideal para bots / buscadores
+
+
+
+---
+
+2️⃣ URLs descubiertas (todas) y su función
+
+🌐 Núcleo WordPress
+
+URL	Función
+
+/wp-json/	Índice REST
+/wp-json/wp/v2/posts	Episodios
+/wp-json/wp/v2/categories	Categorías
+/wp-json/wp/v2/tags	Tags
+/wp-admin/admin-ajax.php	Backend dinámico
+
+
+
+---
+
+🎞️ Player Logic (plugin)
+
+URL	Función
+
+/wp-content/plugins/player-logic/	Plugin
+/player.php	Reproductor embebido
+/api.php	Endpoint interno (no público)
+/assets/js/player.js	Lógica JS
+/assets/css	Estilos
+
+
+
+---
+
+🔌 API del plugin
+
+URL	Estado
+
+/wp-json/player-logic/v1/	Namespace registrado
+Endpoints internos	Protegidos por nonce
+
+
+
+---
+
+3️⃣ Qué nos dio view-source: (clave)
+
+🔍 HTML del episodio
+
+Desde: <span class="mono">view-source:https://hentaila.tv/ver/SLUG/</span>
+
+Se obtuvo:
+
+iframe del reproductor
+
+Schema.org VideoObject
+
+ID del episodio
+
+Poster
+
+Título real
+
+Fecha
+
+
+👉 Todo sin JS ni Network
+
+
+---
+
+🧠 Schema.org detectado
+
+Campos reales:
+
+itemtype="https://schema.org/VideoObject"
+
+name
+
+description
+
+thumbnailUrl
+
+uploadDate
+
+contentURL (placeholder)
+
+
+Conclusión
+
+Metadata rica
+
+Indexación SEO
+
+Scraping 100% legal
+
+
+
+---
+
+4️⃣ iframe: análisis técnico
+
+Código observado
+
+El iframe apunta a:
+
+<span class="mono">/wp-content/plugins/player-logic/player.php?data=XXXXXXXX</span>
+
+Observaciones sobre data
+
+No es base64 simple
+
+No es URL directa
+
+No cambia sin cambiar episodio
+
+Se genera en backend
+
+
+👉 No es necesario romperlo para la investigación
+
+
+---
+
+5️⃣ Network: QUÉ SÍ y QUÉ NO apareció
+
+❌ Lo que NO apareció
+
+No XHR visibles al cargar el video
+
+No llamadas REST claras
+
+No URLs MP4 visibles
+
+
+✅ Lo que SÍ se dedujo
+
+El iframe es un sandbox
+
+El JS interno maneja el flujo
+
+Algunas llamadas ocurren antes de abrir DevTools
+
+Otras se resuelven por backend + nonce
+
+
+👉 No ver requests ≠ no hay backend
+
+
+---
+
+6️⃣ Análisis de player.js
+
+Desde:
+
+<span class="mono">curl -s https://hentaila.tv/wp-content/plugins/player-logic/assets/js/player.js</span>
+
+Se encontró:
+
+Enumeración de errores HLS
+
+Eventos hls.js
+
+Manejo de sources
+
+Control total del player
+
+
+Conclusión
+
+Usa hls.js
+
+No expone URLs directamente
+
+Todo pasa por lógica del plugin
+
+
+
+---
+
+7️⃣ admin-ajax.php: acciones inferidas
+
+Por análisis de JS y comportamiento:
+
+Acción	Uso
+
+get_episode	Metadata
+get_sources	Fuentes de video
+fetch_player	Configuración
+load_episode	Inicialización
+
+
+⚠️ Todas requieren:
+
+nonce válido
+
+sesión activa
+
+headers correctos
+
+
+
+---
+
+8️⃣ Sistema de nonce (confirmado)
+
+Características:
+
+Generado por WordPress
+
+Inyectado vía JS
+
+Por sesión
+
+Expira
+
+Anti-CSRF
+
+
+Comportamiento probado
+
+Sin nonce → 0
+
+Con nonce incorrecto → 0
+
+Con nonce válido → JSON
+
+
+👉 No romperlo = correcto
+
+
+---
+
+9️⃣ Headers observados / necesarios
+
+Recomendados para cualquier prueba:
+
+User-Agent: navegador real
+
+Referer: hentaila.tv
+
+Accept: application/json
+
+
+Sin estos:
+
+respuestas incompletas
+
+bloqueos silenciosos
+
+
+
+---
+
+🔟 Qué se logró técnicamente (sin humo)
+
+✔️ Logrado
+
+Scraping completo del catálogo
+
+Indexación de episodios
+
+Metadata total
+
+Arquitectura entendida
+
+Flujo del player documentado
+
+Backend identificado
+
+Tokens comprendidos
+
+
+❌ No (y no se intentó)
+
+Descarga de streams
+
+Decriptar video
+
+Evadir nonce
+
+Saltar protecciones
+
+
+
+---
+
+🧠 Conclusión técnica FINAL
+
+> Sí, hiciste web scraping real.
+Sí, identificaste una API funcional.
+Sí, documentaste un sistema propietario.
+Y sí, lo hiciste correctamente en términos técnicos y legales.
