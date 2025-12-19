@@ -68,12 +68,6 @@ Ideal para aprendizaje de scraping, reverse engineering web y bots privados.
 14. Seguridad y limitaciones
 
 
-15. Casos de uso
-
-
-16. Notas finales
-
-
 
 
 ---
