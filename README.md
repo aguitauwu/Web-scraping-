@@ -1,361 +1,248 @@
-Hentaila TV — Análisis Técnico de API Implícita & Scraping (No oficial)
+🌐✨ Hentaila Reverse API Documentation ✨🌐
 
-> Estado: Investigación técnica / educativa
-Stack: WordPress + Plugins custom + HLS
-Tipo: API implícita (no documentada)
-Nivel: Intermedio / Avanzado
+   
+
+
+---
+
+¡Holi~! 🌸
+
+Esta es una documentación técnica, experimental y educativa sobre el proceso de reconocimiento, análisis y reverse‑engineering de Hentaila.tv 🕷️
+
+> ✨ Proyecto hecho en una tarde, desde un móvil, usando Termux y pura curiosidad.
 
 
 
 
 ---
 
-⚠️ Disclaimer técnico
+📑 Tabla de Contenidos
 
-No es una API oficial ni estable.
+🌙 Introducción
 
-No se documenta bypass de DRM, cifrado fuerte ni evasión de protecciones activas.
+🎯 Objetivo del Proyecto
 
-Todo se basa en endpoints públicos, tráfico del frontend y assets accesibles.
+🗺️ Arquitectura General del Sitio
 
-Ideal para aprendizaje de scraping, reverse engineering web y bots privados.
+🤖 Robots.txt & Sitemaps
 
+🌐 WordPress REST API (wp-json)
 
+⚙️ admin-ajax.php
 
----
+🎮 Player Logic (player.php)
 
-📑 Tabla de contenidos
+🔐 Tokens & Parámetros
 
-1. Introducción y alcance
+🕷️ Estrategia de Scraping
 
+🚨 Limitaciones y Riesgos
 
-2. Arquitectura general
+🤖 Casos de Uso
 
-
-3. Reconocimiento (Recon)
-
-
-4. Robots.txt
-
-
-5. Sitemaps (Indexación masiva)
-
-
-6. REST API WordPress
-
-
-7. AJAX interno (admin-ajax)
-
-
-8. Plugin player-logic
-
-
-9. Flujo real del reproductor
-
-
-10. Tokens y contexto
-
-
-11. Estrategias de scraping
-
-
-12. Modelo de datos
-
-
-13. Errores comunes
-
-
-14. Seguridad y limitaciones
-
+📓 Notas Importantes
 
 
 
 ---
 
-1 **Introducción y alcance**
+🌙 Introducción
 
-Este documento describe cómo Hentaila expone datos sin una API pública, usando:
+Hentaila.tv es un sitio basado en WordPress con plugins personalizados para:
 
-WordPress REST
+Gestión de contenido (manga / episodios)
 
-Sitemaps
+Reproducción de video (HLS)
 
-Plugins personalizados
-
-Player con inicialización vía JS
+Protección ligera mediante tokens
 
 
-No se cubre automatización agresiva ni evasión de medidas anti-bot.
+No expone una API pública documentada, pero sí múltiples endpoints internos explotables de forma pasiva.
 
 
 ---
 
-2 **Arquitectura general**
+🎯 Objetivo del Proyecto
 
-```Usuario/Bot
-   │
-   ├── HTML (posts, capítulos)
-   │
-   ├── REST API (wp-json)
-   │
-   ├── XML (sitemaps)
-   │
-   └── Player Logic
-           └── HLS (.m3u8)```
+📌 Crear una API privada / personal
+
+📌 Experimentar con scraping real
+
+📌 Aprender cómo funcionan players protegidos
+
+📌 NO redistribuir contenido
 
 
-Tecnologías detectadas:
+> ⚠️ Este proyecto NO es para uso comercial ni público.
 
+
+
+
+---
+
+🗺️ Arquitectura General
+
+Cliente
+  ↓
 WordPress
-
-Cloudflare
-
-HLS.js (frontend)
-
-Plugin custom (player-logic)
-
+  ├─ wp-json (REST)
+  ├─ admin-ajax.php
+  ├─ player-logic
+  │    └─ player.php?data=TOKEN
+  └─ HLS (.m3u8)
 
 
 ---
 
-3 Reconocimiento (Recon)
+🤖 Robots.txt & Sitemaps
 
-Endpoints base
+📍 robots.txt
 
-/
-/robots.txt
-/sitemap_index.xml
-/wp-json
+User-agent: *
+Allow: /
 
-Técnicas usadas
+Sitemap: https://hentaila.tv/sitemap_index.xml
 
-Inspección de Network (XHR / Fetch)
+🗺️ Sitemap Index
 
-Descarga directa de JS
+/page-sitemap.xml
 
-Curl desde terminal móvil
+/wp-manga-sitemap.xml
 
+/wp-manga-genre-sitemap.xml
 
+/wp-manga-tag-sitemap.xml
 
----
+/wp-manga-release-sitemap.xml
 
-4 Robots.txt
+/wp-manga-author-sitemap.xml
 
-https://hentaila.tv/robots.txt
-
-Utilidad:
-
-Revela rutas indexables
-
-No bloquea sitemaps
+/wp-manga-chapters-sitemap*.xml
 
 
-> Nota: robots.txt no es seguridad, solo cortesía.
-
-
+💡 Los sitemaps son la fuente principal de scraping limpio.
 
 
 ---
 
-5 Sitemaps (Indexación masiva)
+🌐 WordPress REST API
 
-Índice principal
+Endpoint Base
 
-https://hentaila.tv/sitemap_index.xml
-
-Sitemaps detectados
-
-URL	Contenido
-
-/page-sitemap.xml	Páginas
-/wp-manga-sitemap.xml	Obras
-/wp-manga-chapters-sitemap*.xml	Capítulos
-/wp-manga-genre-sitemap.xml	Géneros
-/wp-manga-tag-sitemap.xml	Tags
-/wp-manga-author-sitemap.xml	Autores
-
-
-Ventaja clave:
-
-> Permite scraping ordenado, rápido y sin crawling agresivo.
-
-
-
-
----
-
-6 REST API WordPress
-
-Raíz
-
-https://hentaila.tv/wp-json
-
-Namespace principal
-
-/wp-json/wp/v2/
+https://hentaila.tv/wp-json/
 
 Endpoints útiles
 
-Endpoint	Función
+/wp-json/wp/v2/posts
 
-/posts	Listar contenido
-/posts?search=	Buscar
-/posts?slug=	Obtener por slug
-/categories	Categorías
-/tags	Etiquetas
+/wp-json/wp/v2/wp-manga
+
+/wp-json/wp/v2/wp-manga-genre
+
+/wp-json/wp/v2/wp-manga-tag
 
 
-Características
-
-JSON limpio
-
-Paginación estándar
-
-HTML embebido en campos
-
+📌 Devuelven JSON estándar de WordPress
 
 
 ---
 
-7 AJAX interno (admin-ajax)
+⚙️ admin-ajax.php
 
-https://hentaila.tv/wp-admin/admin-ajax.php
+POST https://hentaila.tv/wp-admin/admin-ajax.php
 
-Observaciones
+Requiere action
 
-Respuesta 0 sin contexto
+Sin sesión → devuelve 0
 
-Requiere action válida
-
-Muchas acciones solo funcionan desde frontend autenticado
+Muchas acciones solo funcionan desde frontend
 
 
-> ⚠️ No es una API usable por sí sola.
-
-
+📌 No es una API real, es un dispatcher interno.
 
 
 ---
 
-8 Plugin player-logic
+🎮 Player Logic
 
-Endpoint crítico
+Endpoint clave
 
-/wp-content/plugins/player-logic/player.php?data=TOKEN
-
-Qué es
-
-Punto de entrada del reproductor
+https://hentaila.tv/wp-content/plugins/player-logic/player.php?data=TOKEN
 
 Devuelve HTML + JS
 
+Usa HLS (.m3u8)
 
-Assets
-
-/assets/js/player.js
-/assets/css/player.css
-
-
----
-
-9 Flujo real del reproductor
-
-Capítulo HTML
-   ↓
-Extraer TOKEN
-   ↓
-player.php?data=TOKEN
-   ↓
-JS inicializa HLS
-   ↓
-.m3u8 desde CDN
-
-El stream nunca se expone directamente en REST.
-
-
----
-
-🔑 10 Tokens y contexto
-
-TOKEN:
-
-Generado server-side
-
-Dependiente del capítulo
-
-Puede expirar
-
-
-No reutilizable de forma genérica.
-
-
----
-
-🕷️ 11 Estrategias de scraping
-
-Recomendada (low profile)
-
-Sitemap → HTML → metadatos
-
-
-Controlada
-
-Capítulo → token → player
-
-
-Evitar
-
-Fuerza bruta
-
-Crawling sin delay
+El token contiene info cifrada (Base64)
 
 
 
 ---
 
-📦 12 Modelo de datos
+🔐 Tokens & Parámetros
 
-Obra
+Codificados en Base64
 
-id
+Contextuales (episodio + sesión)
 
-slug
-
-título
-
-sinopsis
-
-tags
+No reutilizables indefinidamente
 
 
-Capítulo
+Ejemplo:
 
-número
-
-url
-
-token
-
+echo TOKEN | base64 -d
 
 
 ---
 
-🚨 13 Errores comunes
+🕷️ Estrategia de Scraping
 
-Error	Causa
+✔ Usar sitemaps ✔ Extraer slugs ✔ Resolver player.php ✔ Interceptar .m3u8
 
-0	AJAX sin action
-403	Cloudflare
-Token inválido	Expirado
-
+❌ NO brute-forcear tokens ❌ NO flood de peticiones
 
 
 ---
 
-🔐 14 Seguridad y limitaciones
+🚨 Limitaciones
 
-No hay API pública documentada
-
-Tokens ligados a sesión/contexto
+Tokens expiran
 
 Cloudflare activo
+
+Cambios frecuentes en plugins
+
+
+
+---
+
+🤖 Casos de Uso
+
+Bot privado de Discord
+
+Indexador local
+
+Dataset experimental
+
+Aprendizaje de RE web
+
+
+
+---
+
+📓 Notas Importantes
+
+> 🌸 No existe una API pública oficial.
+
+🌸 Todo aquí documentado es resultado de observación pasiva.
+
+🌸 Respeta siempre los TOS del sitio.
+
+
+
+
+---
+
+✨ Proyecto educativo, técnico y experimental
+
+Hecho con curiosidad, Termux y mucha paciencia 💫
