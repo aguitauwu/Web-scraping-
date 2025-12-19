@@ -1,128 +1,96 @@
-**🧠✨ Hentaila Reverse API**
+# 🧠✨ Hentaila Reverse API
+### _Investigación técnica, scraping educativo y análisis de arquitectura_
 
-> Documentación técnica no oficial
-Investigación de endpoints públicos, arquitectura del reproductor, automatización y scraping educativo sobre hentaila.tv.
+<div align="center">
 
-
-
-<div align="center">   
+![status](https://img.shields.io/badge/status-research-blueviolet)
+![wordpress](https://img.shields.io/badge/platform-WordPress-21759B)
+![api](https://img.shields.io/badge/type-reverse--engineering-orange)
+![educational](https://img.shields.io/badge/use-educational-green)
+![device](https://img.shields.io/badge/made%20from-mobile%20only-red)
 
 </div>
----
-
-⚠️ Aviso Legal
-
-> Este proyecto es educativo y de investigación técnica.
-No está afiliado ni respaldado por hentaila.tv.
-No promueve piratería, redistribución ni bypass de protecciones.
-Usa esta información bajo tu propia responsabilidad y respeta las leyes locales y los Términos de Servicio.
-
-
-
 
 ---
 
-📑 Tabla de Contenidos
+## ⚠️ Aviso Legal
 
-Introducción
-
-Arquitectura del sitio
-
-Superficies de API descubiertas
-
-Endpoints detallados
-
-Player Logic & iframe
-
-Sistema de tokens (nonces)
-
-Parámetro data (estado real)
-
-Metadata y episodios
-
-Pruebas manuales (curl)
-
-Automatización
-
-Ejemplos de respuestas
-
-Headers recomendados
-
-Herramientas
-
-Seguridad y limitaciones
-
-Qué se logró realmente
-
-Ideas futuras
-
-Créditos
-
-
+> **Este proyecto es únicamente educativo y de investigación técnica.**  
+> No está afiliado, respaldado ni aprobado por **hentaila.tv**.  
+> No promueve piratería, redistribución de contenido ni bypass de protecciones.  
+> Toda la información documentada proviene de **endpoints públicos y observación pasiva**.
 
 ---
 
-🌐 Introducción
+## 📚 Tabla de Contenidos
 
-Este repositorio documenta superficies públicas reales expuestas por un sitio WordPress moderno que sirve contenido multimedia mediante un plugin personalizado (player-logic).
-
-La investigación se realizó:
-
-📱 Desde dispositivo móvil
-
-❌ Sin PC
-
-❌ Sin herramientas avanzadas
-
-❌ Sin acceso privado
-
-✅ Solo observación, Network y pruebas pasivas
-
-
-Objetivos
-
-Entender el flujo real del reproductor
-
-Identificar endpoints públicos
-
-Reproducir llamadas con herramientas estándar
-
-Diseñar automatización rate-limit friendly
-
-Delimitar qué es posible y qué no, legalmente
-
-
+- 📌 Introducción  
+- 🏗️ Arquitectura del sitio  
+- 🔍 Superficies de API descubiertas  
+- 🎥 Player Logic e iframe  
+- 🔐 Sistema de tokens (nonces)  
+- 🧩 Parámetro `data`  
+- 🧠 Metadata y episodios  
+- 🧪 Pruebas manuales  
+- 🤖 Automatización  
+- 📊 Tabla de endpoints  
+- 🧾 Headers recomendados  
+- 🛠️ Herramientas  
+- 🔒 Seguridad y limitaciones  
+- ✅ Qué se logró realmente  
+- 🚀 Ideas futuras  
+- 🧾 Créditos  
 
 ---
 
-🏗️ Arquitectura del Sitio
+## 📌 Introducción
 
+Este repositorio documenta el análisis técnico de **hentaila.tv**, un sitio basado en **WordPress** que utiliza un **plugin personalizado (`player-logic`)** para servir contenido multimedia mediante un reproductor embebido.
+
+### Contexto del proyecto
+
+- 📱 Hecho **desde un móvil**
+- ❌ Sin PC
+- ❌ Sin herramientas profesionales
+- ❌ Sin acceso privado
+- ✅ Solo DevTools, Network y pruebas pasivas
+
+### Objetivos
+
+- Comprender el **flujo real del reproductor**
+- Identificar **endpoints públicos**
+- Determinar el rol del **nonce**
+- Diseñar scraping **ético y documentado**
+
+---
+
+## 🏗️ Arquitectura del Sitio
+
+```mermaid
 graph LR
-A[Cliente / Browser] -->|GET| B[WordPress]
-B -->|HTML + JS| C[player-logic plugin]
+A[Usuario / Navegador] -->|GET| B[WordPress]
+B -->|HTML + JS| C[player-logic]
 C -->|iframe| D[player.php]
-D -->|JS runtime| E[admin-ajax.php]
-E -->|JSON controlado| C
+D -->|AJAX + nonce| E[admin-ajax.php]
+E -->|JSON| C
 
-Capas identificadas
+Componentes clave
 
-Frontend → WordPress + JS
+Capa	Tecnología	Rol
 
-Backend → admin-ajax.php
-
-Player → plugin player-logic
-
-Control → nonce dinámico por sesión
-
-Stream → nunca expuesto directamente en HTML
+Frontend	WordPress + JS	Renderizado
+Backend	admin-ajax.php	Control
+Player	player-logic	Video
+Seguridad	nonce	Validación
+Stream	Runtime	Nunca directo
 
 
 
 ---
 
-🔎 Superficies de API Descubiertas
+🔍 Superficies de API Descubiertas
 
-1️⃣ WordPress REST API (estándar)
+1️⃣ WordPress REST API
 
 https://hentaila.tv/wp-json/
 
@@ -132,178 +100,157 @@ Ejemplos:
 /wp-json/wp/v2/categories
 /wp-json/wp/v2/tags
 
-Devuelve:
+📦 Devuelve:
+IDs, títulos, slugs, fechas, metadata pública.
 
-IDs
-
-títulos
-
-slugs
-
-fechas
-
-metadata pública
-
-
-📌 Útil para scraping de catálogo, NO para video
+✅ Ideal para scraping de catálogo
+❌ No expone streams
 
 
 ---
 
-2️⃣ Player Logic API (plugin)
+2️⃣ Player Logic REST API
 
 https://hentaila.tv/wp-json/player-logic/v1/
 
 Existe
 
-Parcialmente accesible
+Parcialmente documentable
 
 Algunos endpoints requieren nonce
 
-Otros no devuelven nada útil directamente
 
+⚠️ No usable sin contexto de sesión
 
 
 ---
 
-3️⃣ AJAX Backend (clave real)
+3️⃣ AJAX Backend (núcleo real)
 
 https://hentaila.tv/wp-admin/admin-ajax.php
 
-Acciones observadas (por JS y Network):
+Acciones observadas:
 
 load_episode
-
 get_episode
-
 fetch_player
-
 get_video
-
 get_sources
 
-
-📌 Sin parámetros válidos → responde 0
+📌 Sin parámetros válidos → respuesta: 0
 
 
 ---
 
-🎥 Player Logic & iframe
+🎥 Player Logic e iframe
 
-El reproductor NO usa una URL de video directa en la página.
+El video NO está en el HTML principal.
 
-Ejemplo real observado:
+Ejemplo real:
 
 <iframe
-  src="https://hentaila.tv/wp-content/plugins/player-logic/player.php?data=BASE64_STRING"
+  src="https://hentaila.tv/wp-content/plugins/player-logic/player.php?data=BASE64"
   frameborder="0"
   allowfullscreen>
 </iframe>
 
-Flujo real
+Flujo real del reproductor
 
-1. Página del episodio carga
-
-
-2. Se inyecta iframe
+1. Se carga la página del episodio
 
 
-3. player.php recibe data
+2. Se inyecta el iframe
 
 
-4. JS del plugin procesa data
+3. player.php procesa data
 
 
-5. Se solicita info vía AJAX con nonce
+4. JS obtiene nonce
 
 
-6. El stream se carga en runtime
+5. AJAX devuelve fuentes
+
+
+6. Stream se reproduce en runtime
 
 
 
 
 ---
 
-🔐 Sistema de Tokens (Nonces)
+🔐 Sistema de Tokens (Nonce)
 
-¿Qué es un nonce?
+¿Qué es?
 
 Token temporal de WordPress
 
-Vinculado a sesión + contexto
+Asociado a sesión
 
 Protege llamadas AJAX
 
 Expira
 
 
-Se inyecta vía JS, normalmente desde:
+Ubicación típica:
 
 /wp-content/plugins/player-logic/assets/js/player.js
 
 Ejemplo conceptual:
 
-var playerLogic = {
+playerLogic = {
   nonce: "abc123",
-  episode_id: 4567
+  episode_id: 9876
 }
-
-Flujo del nonce
 
 graph TD
 A[Visitar episodio] --> B[JS obtiene nonce]
-B --> C[POST admin-ajax.php]
-C --> D[Respuesta JSON controlada]
+B --> C[POST admin-ajax]
+C --> D[JSON controlado]
 
 
 ---
 
-🧩 Parámetro data (estado real)
-
-El parámetro:
+🧩 Parámetro data
 
 player.php?data=Y3lUUk12S2paUG1j...
 
-Estado actual
+Estado real
 
-✔ Codificado / cifrado
+Aspecto	Estado
 
-✔ Procesado solo por JS del player
+Codificado	✅
+Procesado por JS	✅
+Decodificado aquí	❌
+Necesario romper	❌
 
-❌ No decodificado en este proyecto
 
-❌ No documentado intencionalmente
-
-
-📌 No es necesario romperlo para entender la arquitectura.
+📌 No es necesario romperlo para documentar la arquitectura.
 
 
 ---
 
 🧠 Metadata y Episodios
 
-Se encontró metadata semántica completa:
+Metadata semántica encontrada:
 
 <div itemscope itemtype="https://schema.org/VideoObject">
-  <meta itemprop="name" content="Reika wa Karei na Boku no Joou - Episodio 1">
-  <meta itemprop="thumbnailUrl" content="poster.jpg">
-  <meta itemprop="uploadDate" content="2025-11-06">
-</div>
 
-Esto permite:
+Incluye:
 
-Listar episodios
+Título
 
-Asociar IDs
+Poster
 
-Extraer posters
+Fecha
 
-Fechas
+Slug
 
-Slugs
+Episodio
 
 
-✔ Scraping pasivo válido
+✅ Scraping pasivo válido
+✅ Sin AJAX
+✅ Sin nonce
 
 
 ---
@@ -323,61 +270,48 @@ Respuesta:
 
 ---
 
-⚠️ Con nonce (teórico / observado)
-
-curl -X POST \
-  -d "action=get_sources" \
-  -d "nonce=NONCE_VALIDO" \
-  -d "episode_id=12345" \
-  https://hentaila.tv/wp-admin/admin-ajax.php
-
-Respuesta típica (estructura):
+⚠️ Con nonce (estructura observada)
 
 {
   "success": true,
   "data": {
     "sources": [
-      {
-        "label": "720p",
-        "file": "https://cdn.example/video.m3u8"
-      }
+      { "label": "720p", "file": "https://cdn.example/video.m3u8" }
     ]
   }
 }
 
-📌 No se fuerza ni se automatiza en este repo
+🚫 No automatizado en este repo
 
 
 ---
 
-🤖 Automatización
+🤖 Automatización (permitida)
 
-Permitida / documentada
+✔ HTML scraping
+✔ REST API WordPress
+✔ Metadata
+✔ Posters
+✔ Slugs
 
-HTML scraping
+🚫 Descarga de video
+🚫 Bypass de nonce
 
-REST API WordPress
-
-Metadata
-
-Posters
-
-Slugs
-
-Conteo de episodios
-
-
-Ejemplo mínimo
+Ejemplo:
 
 curl https://hentaila.tv/ver/... | grep VideoObject
 
-🚫 No incluida:
 
-Descarga de video
+---
 
-Bypass de nonce
+📊 Tabla Resumen de Endpoints
 
-Requests masivos
+Endpoint	Tipo	Uso
+
+/wp-json/wp/v2/posts	REST	Catálogo
+/wp-json/player-logic/v1/	REST	Player
+/admin-ajax.php	AJAX	Control
+player.php	iframe	Runtime
 
 
 
@@ -392,19 +326,16 @@ Requests masivos
 
 ---
 
-🛠️ Herramientas Útiles
+🛠️ Herramientas
 
-curl → pruebas rápidas
+Tool	Uso
 
-jq → parseo JSON
-
-grep / sed → extracción
-
-httpie → POST legibles
-
-python → automatización ética
-
-node → wrappers / bots metadata
+curl	Requests
+jq	JSON
+grep/sed	Parsing
+httpie	POST
+python	Scraping
+node	Bots
 
 
 
@@ -412,57 +343,46 @@ node → wrappers / bots metadata
 
 🔒 Seguridad y Limitaciones
 
-Nonces expiran
+Nonce expira
 
 Cloudflare activo
 
 Rate-limit posible
 
-Plugin cambia con frecuencia
-
-Streams no expuestos directamente
+Plugin cambia
 
 
-Buenas prácticas:
-
-Cachear metadata
-
-Backoff
-
-No flood
-
-Uso educativo
-
+✔ Usar backoff
+✔ No flood
+✔ Uso educativo
 
 
 ---
 
 ✅ Qué se logró realmente
 
-✔ Identificar arquitectura completa
-✔ Confirmar plugin y flujo
-✔ Detectar endpoints reales
-✔ Entender el rol del nonce
+✔ Arquitectura completa
+✔ Plugin identificado
+✔ Endpoints reales
 ✔ Scraping pasivo exitoso
-✔ Reproducción funcional solo vía navegador
-✔ Documentación clara y legal
+✔ Documentación legal
 
-👉 Sí: esto cuenta como web scraping técnico válido
+🟢 Sí: esto cuenta como web scraping técnico real
 
 
 ---
 
 🚀 Ideas Futuras
 
-Wrapper Node.js (solo metadata)
+Wrapper Node.js (metadata)
 
-CLI scraper educativo
+CLI scraper
 
-Bot de Discord (catálogo)
+Bot Discord
 
-Swagger fake docs
+Swagger fake
 
-Comparativa con Rule34 / sitios similares
+Comparativa Rule34
 
 
 
@@ -471,9 +391,9 @@ Comparativa con Rule34 / sitios similares
 🧾 Créditos
 
 pos a mi xd
-y a demasiada curiosidad
+curiosidad + una tarde libre
 
 
 ---
 
-⭐ Si este repo te sirvió, deja una estrella y compártelo con otros devs curiosos.
+⭐ Si este repo te sirvió, deja una estrella.
