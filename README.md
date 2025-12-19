@@ -47,14 +47,6 @@
 
 Este repositorio documenta el análisis técnico de **hentaila.tv**, un sitio basado en **WordPress** que utiliza un **plugin personalizado (`player-logic`)** para servir contenido multimedia mediante un reproductor embebido.
 
-### Contexto del proyecto
-
-- 📱 Hecho **desde un móvil**
-- ❌ Sin PC
-- ❌ Sin herramientas profesionales
-- ❌ Sin acceso privado
-- ✅ Solo DevTools, Network y pruebas pasivas
-
 ### Objetivos
 
 - Comprender el **flujo real del reproductor**
@@ -66,7 +58,7 @@ Este repositorio documenta el análisis técnico de **hentaila.tv**, un sitio ba
 
 ## 🏗️ Arquitectura del Sitio
 
-```mermaid
+mermaid
 graph LR
 A[Usuario / Navegador] -->|GET| B[WordPress]
 B -->|HTML + JS| C[player-logic]
