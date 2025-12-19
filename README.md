@@ -277,10 +277,7 @@ No saturar endpoints
 
 🧾 Créditos
 
-Investigación realizada desde móvil, en una tarde, con curiosidad y paciencia.
-
-> "Reverse engineering también es aprender a leer el silencio de los endpoints."
-
+pos a mi xd
 
 
 
