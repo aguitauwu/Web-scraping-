@@ -56,14 +56,21 @@ Diseñar automatización segura (rate‑limit friendly)
 🏗️ Arquitectura del Sitio
 
 graph LR
-A[Cliente] -->|GET| B[WordPress]
-B -->|JS| C[player-logic]
-C -->|nonce| D[admin-ajax.php]
-D -->|JSON| A
+
+ A[Cliente] -->|GET| B[WordPress]
+
+ B -->|JS| C[player-logic]
+
+ C -->|nonce| D[admin-ajax.php]
+
+ D -->|JSON| A
 
 Frontend  → WordPress + JS
+
 Backend   → admin-ajax.php
+
 Player    → plugin player-logic
+
 Control   → Nonce dinámico por sesión
 
 
