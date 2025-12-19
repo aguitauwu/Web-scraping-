@@ -2,7 +2,7 @@
 <img src="https://img.shields.io/badge/platform-wordpress-blue?style=for-the-badge">
 <img src="https://img.shields.io/badge/method-passive_analysis-green?style=for-the-badge">
 <img src="https://img.shields.io/badge/legal-educational_only-success?style=for-the-badge"></div>
----
+
 
 <style>
 .section{border-left:4px solid #7c3aed;padding:14px;margin:24px 0;background:rgba(124,58,237,.06);border-radius:10px}
@@ -14,7 +14,7 @@ table{width:100%;border-collapse:collapse}
 th,td{border:1px solid #444;padding:8px}
 th{background:rgba(124,58,237,.18)}
 </style>
----
+
 
 <div class="section warn"><h2>⚠️ Aviso Legal y Ético</h2>Este repositorio NO distribuye contenido, NO rompe cifrado, NO evade protecciones
 y NO automatiza descargas.
